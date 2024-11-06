@@ -1,0 +1,40 @@
+default:
+  cache:
+    paths:
+      - .venv
+      - .cargo/bin
+      - .cargo/registry/index
+      - .cargo/registry/cache
+      - target/debug/deps
+      - target/debug/build
+
+variables:
+    CARGO_HOME: ${CI_PROJECT_DIR}/.cargo
+
+stages:
+  - build
+  - publish
+
+build:
+  stage: build
+  image: ghcr.io/pyo3/maturin:main
+  environment:
+    name: $TARGET
+  tags:
+    - $TARGET
+  parallel:
+    matrix:
+      - TARGET: ["x86_64-pc-windows-gnu", "x86_64-unknown-linux-gnu"]
+  script:
+    - maturin build --release --out dist --target  --interpreter python3.9 --target $TARGET
+  artifacts:
+    when: on_success
+    paths:
+      - dist/
+
+publish:
+  stage: publish
+  needs: [build]
+  image: ghcr.io/pyo3/maturin:main
+  script:
+    - maturin publish --non-interactive --skip-existing --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
