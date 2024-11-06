@@ -41,7 +41,10 @@ build:
 
 publish:
   stage: publish
-  needs: [build]
-  image: ghcr.io/pyo3/maturin:main
+  needs: ["build"]
+  image: 
+    name: ghcr.io/pyo3/maturin:main
+    entrypoint: [""]
+
   script:
-    - publish --non-interactive --skip-existing --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
+    - maturin publish --non-interactive --skip-existing --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
