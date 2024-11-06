@@ -1,4 +1,6 @@
 default:
+  before_script:
+    - cd ./pyreccaster/
   cache:
     paths:
       - .venv
