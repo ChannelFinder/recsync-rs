@@ -11,7 +11,8 @@ default:
       - target/debug/build
 
 variables:
-    CARGO_HOME: ${CI_PROJECT_DIR}/.cargo
+    CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 stages:
   - build
@@ -26,14 +27,17 @@ build:
     name: $TARGET
   parallel:
     matrix:
-      - TARGET: ["x86_64-pc-windows-gnu", "x86_64-unknown-linux-gnu"]
+      - TARGET: ["x86_64-pc-windows-gnu", "x86_64-unknown-linux-gnu", "x86_64-apple-darwin"]
   script:
+    - python -m venv venv
+    - source venv/bin/activate
+    - pip install ziglang
     - rustup target add $TARGET
-    - maturin build --release --out dist --interpreter python3.9 --target $TARGET
+    - maturin build --release --interpreter python3.9 --target $TARGET --zig
   artifacts:
     when: on_success
     paths:
-      - dist/
+      - target/wheels/*.whl
 
 publish:
   stage: publish
