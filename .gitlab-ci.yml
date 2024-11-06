@@ -19,7 +19,9 @@ stages:
 
 build:
   stage: build
-  image: ghcr.io/pyo3/maturin:main
+  image: 
+    name: ghcr.io/pyo3/maturin:latest
+    entrypoint: [""]
   environment:
     name: $TARGET
   parallel:
@@ -37,4 +39,4 @@ publish:
   needs: [build]
   image: ghcr.io/pyo3/maturin:main
   script:
-    - maturin publish --non-interactive --skip-existing --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
+    - publish --non-interactive --skip-existing --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
