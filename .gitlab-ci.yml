@@ -22,8 +22,6 @@ build:
   image: ghcr.io/pyo3/maturin:main
   environment:
     name: $TARGET
-  tags:
-    - $TARGET
   parallel:
     matrix:
       - TARGET: ["x86_64-pc-windows-gnu", "x86_64-unknown-linux-gnu"]
