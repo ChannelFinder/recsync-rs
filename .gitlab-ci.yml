@@ -48,4 +48,4 @@ publish:
 
   script:
     # - maturin publish --non-interactive --skip-existing --username ${CI_JOB_TOKEN} --password gitlab-ci-token --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi 
-    - maturin upload --non-interactive --skip-existing --username ${CI_JOB_TOKEN} --password gitlab-ci-token --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi target/wheels/*.whl
+    - maturin upload --non-interactive --skip-existing --username ${CI_JOB_TOKEN} --password gitlab-ci-token --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi ../target/wheels/*.whl
