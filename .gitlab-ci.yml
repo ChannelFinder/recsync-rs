@@ -45,6 +45,11 @@ publish:
   image: 
     name: ghcr.io/pyo3/maturin:main
     entrypoint: [""]
-
+  variables:
+    TWINE_USERNAME: gitlab-ci-token
+    TWINE_PASSWORD: $CI_JOB_TOKEN
   script:
-    - maturin upload --non-interactive --skip-existing --username ${CI_JOB_TOKEN} --password gitlab-ci-token --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi ../target/wheels/*.whl
+    - python -m venv venv
+    - source venv/bin/activate
+    - pip install twine
+    - python -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi ../target/wheels/*.whl
