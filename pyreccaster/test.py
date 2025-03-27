@@ -19,8 +19,13 @@ async def main():
         PyRecord(name="DEV:P4P:VAL", type="longin", alias=None, properties={"recordDesc": "Test longin record", "p4pVersion": "24.1.2"}),
     ]
 
+    properties = {
+        "ENGINEER": "P4P ENGINEER",
+        "HOSTNAME": "P4P Example Machine",
+    }
+
     with Server(providers=[{"DEV:P4P:VAL": pv}]):
-        py_reccaster = await PyReccaster.setup(records)
+        py_reccaster = await PyReccaster.setup(records, properties)
         await py_reccaster.run()
 
 
