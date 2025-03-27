@@ -8,7 +8,7 @@
 pub mod record;
 pub use self::record::Record;
 
-use std::{io, net::{IpAddr, Ipv4Addr, SocketAddr}};
+use std::{collections::HashMap, io, net::{IpAddr, Ipv4Addr, SocketAddr}};
 use tokio::{net::{UdpSocket, TcpStream}, io::Interest}; 
 use tokio_util::codec::Framed;
 use tracing::{debug, error, info};
@@ -21,6 +21,7 @@ pub struct Reccaster {
     framed: Option<Framed<TcpStream, MessageCodec>>,
     buf: [u8; 1024],
     pvs: Vec<Record>,
+    props: Option<HashMap<String, String>>,
     state: CasterState,
 }
 
@@ -33,10 +34,10 @@ enum CasterState {
 
 impl Reccaster {
 
-    pub async fn new(records: Vec<Record>) -> Reccaster {
+    pub async fn new(records: Vec<Record>, props: Option<HashMap<String, String>>) -> Reccaster {
         let sock = UdpSocket::bind(format!("0.0.0.0:{}", wire::SERVER_ANNOUNCEMENT_UDP_PORT)).await.unwrap();
         debug!("listening for announcement messages at {}", wire::SERVER_ANNOUNCEMENT_UDP_PORT);
-        Self { udpsock: sock, framed: None, buf: [0; 1024], pvs: records, state: CasterState::Announcement } 
+        Self { udpsock: sock, framed: None, buf: [0; 1024], pvs: records, props: props, state: CasterState::Announcement } 
     }
 
     pub async fn run(&mut self) {
@@ -117,6 +118,15 @@ impl Reccaster {
                         let _ = framed.send(msg.clone()).await;
                     };
                     // AddInfo Message
+                    // Send Client Properties
+                    if let Some(props) = &self.props {
+                        for (key, value) in props {
+                                let msg: Message = Message::AddInfo(wire::AddInfo { recid: 0, keylen: key.len() as u8, valen: value.len() as u16, key: key.to_string(), value: value.to_string() });
+                                let _ = framed.send(msg.clone()).await;
+                                debug!("Sending AddInfo Message: {:?}", msg.clone());
+                        }
+                    }
+                    // Send Record Properties
                     for (key, value) in &record.properties {
                         let msg = Message::AddInfo(wire::AddInfo { recid: recid, keylen: key.len() as u8, valen: value.len() as u16, key: key.to_string(), value: value.to_string() });
                         let _ = framed.send(msg.clone()).await;
