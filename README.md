@@ -30,7 +30,11 @@ async fn main() {
     record.properties.insert("recordDesc".to_string(), "Rust Recaster".to_string());
     let records: Vec<Record> = vec![record];
 
-    let mut caster = Reccaster::new(records).await;
+    let mut props:  HashMap<String, String> = HashMap::new();
+    props.insert("ENGINEER".into(), "Rust Recaster".into());
+    props.insert("HOSTNAME".into(), "Example-Host-Machine".into());
+
+    let mut caster = Reccaster::new(records, Some(props)).await;
     caster.run().await;
 }
 ```
@@ -57,8 +61,13 @@ async def main():
         PyRecord(name="DEV:P4P:VAL", type="ai", alias="DEV:P4P:TEST", properties={"recordDesc": "P4P Recaster"}),
     ]
 
+    properties = {
+        "ENGINEER": "P4P ENGINEER",
+        "HOSTNAME": "P4P Example Machine",
+    }
+
     with Server(providers=[{"DEV:P4P:VAL": pv}]):
-        py_reccaster = await PyReccaster.setup(records)
+        py_reccaster = await PyReccaster.setup(records, properties)
         await py_reccaster.run()
 
 
