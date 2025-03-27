@@ -69,11 +69,11 @@ struct PyReccaster {
 impl PyReccaster {
 
     #[staticmethod]
-    fn setup(py: Python, records: Vec<PyRecord>) -> PyResult<&PyAny> {
+    fn setup(py: Python, records: Vec<PyRecord>, props: Option<HashMap<String, String>>) -> PyResult<&PyAny> {
         let locals = pyo3_asyncio::tokio::get_current_locals(py)?;
         let pvs = records.iter().map(|record: &PyRecord| record.0.clone()).collect::<Vec<Record>>();
         future_into_py_with_locals(py, locals.clone(), async move {
-            let recc = Reccaster::new(pvs).await;
+            let recc = Reccaster::new(pvs, props).await;
             let pyrecc = PyReccaster { reccaster: Arc::new(Mutex::new(recc)) };
             Python::with_gil(|py| Ok(pyrecc.into_py(py)))
         })
