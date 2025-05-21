@@ -7,8 +7,8 @@
 
 use std::{collections::HashMap, sync::Arc};
 
-use pyo3::{prelude::*, types::PyDict};
-use pyo3_asyncio::tokio::future_into_py_with_locals;
+use pyo3::prelude::*;
+use pyo3_async_runtimes::tokio::future_into_py_with_locals;
 use reccaster::{Record, Reccaster};
 use tokio::sync::Mutex;
        
@@ -39,23 +39,22 @@ impl PyRecord {
     }
 
     #[getter]
-    fn properties<'py>(&self, py: Python<'py>) -> PyResult<&'py PyDict> {
-        let properties = PyDict::new(py);
+    fn properties(&self) -> PyResult<HashMap<String, String>> {
+        let mut properties: HashMap<String, String> = HashMap::new();
         for (key, value) in &self.0.properties {
-            properties.set_item(key, value)?;
+            properties.insert(key.into(), value.into());
         }
         Ok(properties)
     }
 
 }
 
-impl<'source> FromPyObject<'source> for PyRecord {
-    fn extract(ob: &'source PyAny) -> PyResult<Self> {
+impl FromPyObject<'_> for PyRecord {
+    fn extract_bound(ob: &Bound<'_, PyAny>) -> PyResult<Self> {
         let name: String = ob.getattr("name")?.extract().unwrap_or_else(|_| "OPS no name !!!!!!!!!!!".to_string());
         let r#type: String = ob.getattr("type")?.extract()?;
         let alias: Option<String> = ob.getattr("alias")?.extract()?;
         let properties: HashMap<String, String> = ob.getattr("properties")?.extract()?;
-        
         Ok(PyRecord (Record { name, r#type, alias, properties }))
     }
 }
@@ -69,21 +68,20 @@ struct PyReccaster {
 impl PyReccaster {
 
     #[staticmethod]
-    fn setup(py: Python, records: Vec<PyRecord>, props: Option<HashMap<String, String>>) -> PyResult<&PyAny> {
-        let locals = pyo3_asyncio::tokio::get_current_locals(py)?;
+    fn setup(py: Python, records: Vec<PyRecord>, props: Option<HashMap<String, String>>) -> PyResult<Bound<'_, pyo3::PyAny>> {
+        let locals = pyo3_async_runtimes::tokio::get_current_locals(py)?;
         let pvs = records.iter().map(|record: &PyRecord| record.0.clone()).collect::<Vec<Record>>();
-        future_into_py_with_locals(py, locals.clone(), async move {
+        future_into_py_with_locals(py, locals, async move {
             let recc = Reccaster::new(pvs, props).await;
             let pyrecc = PyReccaster { reccaster: Arc::new(Mutex::new(recc)) };
-            Python::with_gil(|py| Ok(pyrecc.into_py(py)))
+            Python::with_gil(|_py| Ok(pyrecc))
         })
     }
 
-    fn run<'p>(&self, py: Python<'p>) -> PyResult<&'p PyAny> {
+    fn run<'a>(&self, py: Python<'a>) -> PyResult<Bound<'a, PyAny>> {
         let recc_arc = self.reccaster.clone();
-        let locals = pyo3_asyncio::tokio::get_current_locals(py)?;
-
-        future_into_py_with_locals(py, locals.clone(), async move {
+        let locals = pyo3_async_runtimes::tokio::get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
             let mut recc = recc_arc.lock().await;
             recc.run().await;
             Ok(())
@@ -92,7 +90,7 @@ impl PyReccaster {
 }
 
 #[pymodule]
-fn pyreccaster(_py: Python, m: &PyModule) -> PyResult<()> {
+fn pyreccaster(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyReccaster>()?;
     m.add_class::<PyRecord>()?;
     Ok(())
