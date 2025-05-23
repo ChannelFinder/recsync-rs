@@ -40,11 +40,7 @@ impl PyRecord {
 
     #[getter]
     fn properties(&self) -> PyResult<HashMap<String, String>> {
-        let mut properties: HashMap<String, String> = HashMap::new();
-        for (key, value) in &self.0.properties {
-            properties.insert(key.into(), value.into());
-        }
-        Ok(properties)
+        Ok(self.0.properties.clone())
     }
 
 }
