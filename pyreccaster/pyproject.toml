@@ -5,11 +5,30 @@ build-backend = "maturin"
 [project]
 name = "pyreccaster"
 requires-python = ">=3.8"
+
+authors = [
+  {name = "Aqeel AlShafei", email = "aqeel.alshafei@stfc.ac.uk"},
+]
+
+maintainers = [
+  {name = "Aqeel AlShafei", email = "aqeel.alshafei@stfc.ac.uk"},
+]
+
+keywords = ["pyreccaster", "reccaster", "recsync-rs", "recsync", "channelfinder", "epics"]
+
 classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: System Administrators",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: System :: Distributed Computing",
+    "Topic :: System :: Networking :: Monitoring",
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: Implementation :: PyPy"
 ]
+
 [project.optional-dependencies]
 tests = [
     "pytest",
