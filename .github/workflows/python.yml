@@ -18,13 +18,12 @@ on:
 permissions:
   contents: read
 
-defaults:
-  run:
-    working-directory: ./pyreccaster
-
 jobs:
   linux:
     runs-on: ${{ matrix.platform.runner }}
+    defaults:
+      run:
+        working-directory: ./pyreccaster
     strategy:
       matrix:
         platform:
@@ -60,6 +59,9 @@ jobs:
 
   windows:
     runs-on: ${{ matrix.platform.runner }}
+    defaults:
+      run:
+        working-directory: ./pyreccaster
     strategy:
       matrix:
         platform:
@@ -87,6 +89,9 @@ jobs:
 
   macos:
     runs-on: ${{ matrix.platform.runner }}
+    defaults:
+      run:
+        working-directory: ./pyreccaster
     strategy:
       matrix:
         platform:
@@ -113,6 +118,9 @@ jobs:
 
   sdist:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./pyreccaster
     steps:
       - uses: actions/checkout@v4
       - name: Build sdist
