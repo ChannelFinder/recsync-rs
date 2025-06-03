@@ -18,6 +18,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: ./pyreccaster
+
 jobs:
   linux:
     runs-on: ${{ matrix.platform.runner }}
