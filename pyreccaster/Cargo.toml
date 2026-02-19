@@ -6,6 +6,10 @@ authors = ["Aqeel AlShafei <aqeel.alshafei@stfc.ac.uk>"]
 license = "MIT AND BSD-3-Clause"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lints]
+workspace = true
+
 [lib]
 name = "pyreccaster"
 crate-type = ["cdylib"]
