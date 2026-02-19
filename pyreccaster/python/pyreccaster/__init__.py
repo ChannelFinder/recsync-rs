@@ -1,5 +1,5 @@
-from .pyreccaster import *
-
+from . import pyreccaster
+from .pyreccaster import *  # noqa: F403
 
 __doc__ = pyreccaster.__doc__
 if hasattr(pyreccaster, "__all__"):
