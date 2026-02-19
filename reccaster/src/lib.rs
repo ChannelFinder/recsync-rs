@@ -37,7 +37,7 @@ impl Reccaster {
     pub async fn new(records: Vec<Record>, props: Option<HashMap<String, String>>) -> Reccaster {
         let sock = UdpSocket::bind(format!("0.0.0.0:{}", wire::SERVER_ANNOUNCEMENT_UDP_PORT)).await.unwrap();
         debug!("listening for announcement messages at {}", wire::SERVER_ANNOUNCEMENT_UDP_PORT);
-        Self { udpsock: sock, framed: None, buf: [0; 1024], pvs: records, props: props, state: CasterState::Announcement } 
+        Self { udpsock: sock, framed: None, buf: [0; 1024], pvs: records, props, state: CasterState::Announcement } 
     }
 
     pub async fn run(&mut self) {
@@ -62,7 +62,7 @@ impl Reccaster {
                         self.state = CasterState::Handshake(msg);
                     }
                 },
-                Err(ref err) if err.kind() == io::ErrorKind::WouldBlock => { return; },
+                Err(ref err) if err.kind() == io::ErrorKind::WouldBlock => {},
                 Err(err) => { error!("{:?}", err) }
             };
         }
@@ -81,17 +81,15 @@ impl Reccaster {
             self.framed = Some(framed);
 
             if let Some(framed) = &mut self.framed {    
-                while let Some(msg) = framed.next().await {
+                if let Some(msg) = framed.next().await {
                     match msg.unwrap() {
                         Message::ServerGreet(_) => {
                             let _ = framed.send(Message::ClientGreet(wire::ClientGreet { serv_key: key })).await;
                             debug!("Greet Message with server key: {}", key);
                             self.state = CasterState::Upload;
-                            return;
                         },
                         _ => {
                             self.state = CasterState::Announcement;
-                            return;
                         },
                     }
                 }
@@ -107,13 +105,13 @@ impl Reccaster {
                     // AddRecord Message
                     let record_name = &record.name;
                     let record_type = &record.r#type;
-                    let msg = Message::AddRecord(wire::AddRecord { recid: recid, atype: wire::AddRecordType::Record as u8, rtlen: record_type.len() as u8, rnlen: record_name.len() as u16, 
+                    let msg = Message::AddRecord(wire::AddRecord { recid, atype: wire::AddRecordType::Record as u8, rtlen: record_type.len() as u8, rnlen: record_name.len() as u16, 
                         rtype: record_type.to_string(), rname: record_name.to_string() });
                     let _ = framed.send(msg.clone()).await;
                     debug!("Sending AddRecord Message: {:?}", msg);
                     // AddRecord alias Message if avaliable
                     if let Some(record_alias) = &record.alias {
-                        let msg = Message::AddRecord(wire::AddRecord { recid: recid, atype: wire::AddRecordType::Alias as u8, rtlen: record_type.len() as u8, rnlen: record_alias.len() as u16, 
+                        let msg = Message::AddRecord(wire::AddRecord { recid, atype: wire::AddRecordType::Alias as u8, rtlen: record_type.len() as u8, rnlen: record_alias.len() as u16, 
                             rtype: record_type.to_string(), rname: record_alias.to_string() });
                         let _ = framed.send(msg.clone()).await;
                     };
@@ -128,7 +126,7 @@ impl Reccaster {
                     }
                     // Send Record Properties
                     for (key, value) in &record.properties {
-                        let msg = Message::AddInfo(wire::AddInfo { recid: recid, keylen: key.len() as u8, valen: value.len() as u16, key: key.to_string(), value: value.to_string() });
+                        let msg = Message::AddInfo(wire::AddInfo { recid, keylen: key.len() as u8, valen: value.len() as u16, key: key.to_string(), value: value.to_string() });
                         let _ = framed.send(msg.clone()).await;
                         debug!("Sending AddInfo Message: {:?}", msg.clone());
                     }
@@ -149,7 +147,7 @@ impl Reccaster {
                             match msg {
                                 Message::Ping(ping_msg) => {
                                     info!("received ping with nonce: {}", ping_msg.nonce);
-                                    if let Err(_) = framed.send(Message::Pong(wire::Pong { nonce: ping_msg.nonce })).await {
+                                    if framed.send(Message::Pong(wire::Pong { nonce: ping_msg.nonce })).await.is_err() {
                                         self.state = CasterState::Announcement;
                                         return;
                                     }
@@ -167,7 +165,6 @@ impl Reccaster {
                     }
                 } 
                 self.state = CasterState::Announcement;
-                return;
             }
         }
     }

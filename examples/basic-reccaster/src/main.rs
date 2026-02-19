@@ -6,7 +6,6 @@
 // See the LICENSE file for details.
 
 use std::collections::HashMap;
-use tracing_subscriber;
 use reccaster::{record::Record, Reccaster};
 
 #[tokio::main]

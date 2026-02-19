@@ -64,7 +64,7 @@ struct PyReccaster {
 impl PyReccaster {
 
     #[staticmethod]
-    fn setup(py: Python, records: Vec<PyRecord>, props: Option<HashMap<String, String>>) -> PyResult<Bound<'_, pyo3::PyAny>> {
+    fn setup(py: Python<'_>, records: Vec<PyRecord>, props: Option<HashMap<String, String>>) -> PyResult<Bound<'_, pyo3::PyAny>> {
         let locals = pyo3_async_runtimes::tokio::get_current_locals(py)?;
         let pvs = records.iter().map(|record: &PyRecord| record.0.clone()).collect::<Vec<Record>>();
         future_into_py_with_locals(py, locals, async move {
