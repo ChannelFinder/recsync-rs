@@ -5,6 +5,8 @@
 // You must comply with both licenses to use, modify, or distribute this software.
 // See the LICENSE file for details.
 
+
+#![allow(missing_docs)]
 use std::collections::HashMap;
 use reccaster::{record::Record, Reccaster};
 

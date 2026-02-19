@@ -5,6 +5,10 @@
 // You must comply with both licenses to use, modify, or distribute this software.
 // See the LICENSE file for details.
 
+//! Client library for the RecSync protocol, used to register EPICS PV records
+//! with a RecSync server over TCP.
+
+/// Record type definitions.
 pub mod record;
 pub use self::record::Record;
 
@@ -16,6 +20,7 @@ use wire::{Announcement, Message, MessageCodec, MSG_MAGIC_ID};
 use tokio_stream::StreamExt;
 use futures::SinkExt;
 
+/// An active RecSync caster that announces PV records to a RecSync server.
 pub struct Reccaster {
     udpsock: UdpSocket,
     framed: Option<Framed<TcpStream, MessageCodec>>,
@@ -34,12 +39,16 @@ enum CasterState {
 
 impl Reccaster {
 
+    /// Create a new `Reccaster` that will register `records` with optional client
+    /// properties `props` once a RecSync server is discovered.
     pub async fn new(records: Vec<Record>, props: Option<HashMap<String, String>>) -> Reccaster {
         let sock = UdpSocket::bind(format!("0.0.0.0:{}", wire::SERVER_ANNOUNCEMENT_UDP_PORT)).await.unwrap();
         debug!("listening for announcement messages at {}", wire::SERVER_ANNOUNCEMENT_UDP_PORT);
         Self { udpsock: sock, framed: None, buf: [0; 1024], pvs: records, props, state: CasterState::Announcement } 
     }
 
+    /// Run the caster indefinitely, cycling through discovery, handshake, upload,
+    /// and keepalive phases as the connection state changes.
     pub async fn run(&mut self) {
         loop {
             match self.state {
