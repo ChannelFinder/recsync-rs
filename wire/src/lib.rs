@@ -7,10 +7,10 @@
 
 //! Wire protocol types, codec, and constants for the RecSync protocol.
 
-mod header;
 mod codec;
+mod header;
 mod types;
 
-pub use types::*;
 pub use codec::*;
 pub use header::*;
+pub use types::*;

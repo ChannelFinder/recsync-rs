@@ -24,6 +24,11 @@ impl Record {
     /// Create a new record with the given name and type, no alias, and empty properties.
     pub fn new(name: String, r#type: String) -> Record {
         let map: HashMap<String, String> = HashMap::new();
-        Record { name, r#type, alias: None, properties: map}
+        Record {
+            name,
+            r#type,
+            alias: None,
+            properties: map,
+        }
     }
 }

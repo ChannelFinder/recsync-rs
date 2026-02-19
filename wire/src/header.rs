@@ -5,9 +5,9 @@
 // You must comply with both licenses to use, modify, or distribute this software.
 // See the LICENSE file for details.
 
+use crate::MSG_MAGIC_ID;
 use bytes::{BufMut, BytesMut};
 use std::mem::size_of;
-use crate::MSG_MAGIC_ID;
 
 /// Fixed 8-byte header that precedes every wire protocol message.
 #[derive(Debug, Clone, PartialEq)]
@@ -23,7 +23,11 @@ pub struct MessageHeader {
 impl MessageHeader {
     /// Create a new header with the given message type and body length.
     pub fn new(msg_id: u16, len: u32) -> MessageHeader {
-        MessageHeader { id: MSG_MAGIC_ID, msg_id, len }
+        MessageHeader {
+            id: MSG_MAGIC_ID,
+            msg_id,
+            len,
+        }
     }
 
     /// Return Header as BytesMut
