@@ -1,12 +1,12 @@
 # Recsync-rs
 
-A rust implementation of [recsync](https://github.com/ChannelFinder/recsync) protocl with python bindings.Aiming for bug to bug compatibility with current implementation of RecCeiver.  
+A rust implementation of [recsync](https://github.com/ChannelFinder/recsync) protocl with python bindings.Aiming for bug to bug compatibility with current implementation of RecCeiver.
 See the [recsync](https://github.com/ChannelFinder/recsync) original repository for details about the protocol and theory of operation.
 
-## Project status 
-The project initially would implement only **ReCaster** in Rust with Python binding to be used along with [p4p](https://github.com/mdavidsaver/p4p). 
-**RecCeiver** is not implemented yet. Recsync-rs is split into different sections. First part is `wire` which implements only the protocol definition, encoders and decoders. 
-It used by **ReCaster** and **RecCeiver** (not implemented yet). Second part is `reccaster` which is **ReCaster** implementation, as it will be used as rust library. 
+## Project status
+The project initially would implement only **ReCaster** in Rust with Python binding to be used along with [p4p](https://github.com/mdavidsaver/p4p).
+**RecCeiver** is not implemented yet. Recsync-rs is split into different sections. First part is `wire` which implements only the protocol definition, encoders and decoders.
+It used by **ReCaster** and **RecCeiver** (not implemented yet). Second part is `reccaster` which is **ReCaster** implementation, as it will be used as rust library.
 Finally, `pyreccaster` is a [pyo3](https://github.com/PyO3/pyo3) Rust-wrapped Python library of `reccaster`.
 
 ### RecCaster functionality
@@ -17,7 +17,7 @@ Finally, `pyreccaster` is a [pyo3](https://github.com/PyO3/pyo3) Rust-wrapped Py
 * [X] Add Info
 * [ ] Delete Record
 
-## Usage Example 
+## Usage Example
 
 Using Rust
 ```rust
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 ## Requirements
 * Rust 1.54.0 or later
 * Python 3.7 or later
-* [Maturin](https://github.com/PyO3/maturin) 
+* [Maturin](https://github.com/PyO3/maturin)
 
 ## Build and Installation
 
@@ -99,7 +99,7 @@ pip install maturin
 cd pyreccaster
 maturin build
 # to install the python bindings
-pip install . 
+pip install .
 ```
 
 ### Cross-Compile Python bindings for Windows

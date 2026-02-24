@@ -33,6 +33,10 @@ classifiers = [
 tests = [
     "pytest",
 ]
+lint = [
+    "ruff",
+    "mypy",
+]
 dynamic = ["version"]
 
 [tool.maturin]
@@ -40,3 +44,15 @@ profile = "release"
 python-source = "python"
 compatibility = "linux"
 features = ["pyo3/extension-module"]
+
+[tool.ruff]
+target-version = "py38"
+src = ["python"]
+exclude = ["test.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "RUF"]
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true

@@ -7,17 +7,28 @@
 
 use std::collections::HashMap;
 
+/// Represents a single PV (Process Variable) record to be registered with the server.
 #[derive(Debug, Clone)]
 pub struct Record {
+    /// The PV name (e.g. `"DEV:AI:1"`).
     pub name: String,
+    /// The EPICS record type (e.g. `"ai"`, `"bo"`).
     pub r#type: String,
+    /// An optional alias name for this record.
     pub alias: Option<String>,
-    pub properties: HashMap<String, String>
+    /// Arbitrary key-value metadata attached to this record.
+    pub properties: HashMap<String, String>,
 }
 
 impl Record {
+    /// Create a new record with the given name and type, no alias, and empty properties.
     pub fn new(name: String, r#type: String) -> Record {
         let map: HashMap<String, String> = HashMap::new();
-        Record { name, r#type, alias: None, properties: map}
+        Record {
+            name,
+            r#type,
+            alias: None,
+            properties: map,
+        }
     }
 }

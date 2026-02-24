@@ -5,13 +5,14 @@
 // You must comply with both licenses to use, modify, or distribute this software.
 // See the LICENSE file for details.
 
+#![allow(missing_docs)]
 use std::{collections::HashMap, sync::Arc};
 
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::future_into_py_with_locals;
-use reccaster::{Record, Reccaster};
+use reccaster::{Reccaster, Record};
 use tokio::sync::Mutex;
-       
+
 #[pyclass]
 pub struct PyRecord(Record);
 
@@ -19,8 +20,18 @@ pub struct PyRecord(Record);
 impl PyRecord {
     #[new]
     #[pyo3(signature = (name, r#type, alias=None, properties=HashMap::new()))]
-    fn new(name: String, r#type: String, alias: Option<String>, properties: HashMap<String, String>) -> Self {
-        PyRecord(Record { name, r#type, alias, properties })
+    fn new(
+        name: String,
+        r#type: String,
+        alias: Option<String>,
+        properties: HashMap<String, String>,
+    ) -> Self {
+        PyRecord(Record {
+            name,
+            r#type,
+            alias,
+            properties,
+        })
     }
 
     #[getter]
@@ -42,16 +53,23 @@ impl PyRecord {
     fn properties(&self) -> PyResult<HashMap<String, String>> {
         Ok(self.0.properties.clone())
     }
-
 }
 
 impl FromPyObject<'_> for PyRecord {
     fn extract_bound(ob: &Bound<'_, PyAny>) -> PyResult<Self> {
-        let name: String = ob.getattr("name")?.extract().unwrap_or_else(|_| "OPS no name !!!!!!!!!!!".to_string());
+        let name: String = ob
+            .getattr("name")?
+            .extract()
+            .unwrap_or_else(|_| "OPS no name !!!!!!!!!!!".to_string());
         let r#type: String = ob.getattr("type")?.extract()?;
         let alias: Option<String> = ob.getattr("alias")?.extract()?;
         let properties: HashMap<String, String> = ob.getattr("properties")?.extract()?;
-        Ok(PyRecord (Record { name, r#type, alias, properties }))
+        Ok(PyRecord(Record {
+            name,
+            r#type,
+            alias,
+            properties,
+        }))
     }
 }
 
@@ -62,14 +80,22 @@ struct PyReccaster {
 
 #[pymethods]
 impl PyReccaster {
-
     #[staticmethod]
-    fn setup(py: Python, records: Vec<PyRecord>, props: Option<HashMap<String, String>>) -> PyResult<Bound<'_, pyo3::PyAny>> {
+    fn setup(
+        py: Python<'_>,
+        records: Vec<PyRecord>,
+        props: Option<HashMap<String, String>>,
+    ) -> PyResult<Bound<'_, pyo3::PyAny>> {
         let locals = pyo3_async_runtimes::tokio::get_current_locals(py)?;
-        let pvs = records.iter().map(|record: &PyRecord| record.0.clone()).collect::<Vec<Record>>();
+        let pvs = records
+            .iter()
+            .map(|record: &PyRecord| record.0.clone())
+            .collect::<Vec<Record>>();
         future_into_py_with_locals(py, locals, async move {
             let recc = Reccaster::new(pvs, props).await;
-            let pyrecc = PyReccaster { reccaster: Arc::new(Mutex::new(recc)) };
+            let pyrecc = PyReccaster {
+                reccaster: Arc::new(Mutex::new(recc)),
+            };
             Python::with_gil(|_py| Ok(pyrecc))
         })
     }

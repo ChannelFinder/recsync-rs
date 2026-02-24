@@ -5,10 +5,12 @@
 // You must comply with both licenses to use, modify, or distribute this software.
 // See the LICENSE file for details.
 
-mod header;
+//! Wire protocol types, codec, and constants for the RecSync protocol.
+
 mod codec;
+mod header;
 mod types;
 
-pub use types::*;
 pub use codec::*;
 pub use header::*;
+pub use types::*;

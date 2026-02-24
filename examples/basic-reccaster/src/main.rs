@@ -5,20 +5,23 @@
 // You must comply with both licenses to use, modify, or distribute this software.
 // See the LICENSE file for details.
 
-use std::collections::HashMap;
-use tracing_subscriber;
+#![allow(missing_docs)]
 use reccaster::{record::Record, Reccaster};
+use std::collections::HashMap;
 
 #[tokio::main]
 async fn main() {
-
-    tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG).init();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .init();
 
     let mut record = Record::new("DEV:RECASTER:RUST".to_string(), "ai".to_string());
-    record.properties.insert("recordDesc".to_string(), "Rust Recaster".to_string());
+    record
+        .properties
+        .insert("recordDesc".to_string(), "Rust Recaster".to_string());
     let records: Vec<Record> = vec![record];
 
-    let mut props:  HashMap<String, String> = HashMap::new();
+    let mut props: HashMap<String, String> = HashMap::new();
     props.insert("ENGINEER".into(), "Rust Recaster".into());
     props.insert("HOSTNAME".into(), "Example-Host-Machine".into());
 

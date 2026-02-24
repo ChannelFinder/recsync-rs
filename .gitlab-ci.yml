@@ -20,7 +20,7 @@ stages:
 
 build:
   stage: build
-  image: 
+  image:
     name: ghcr.io/pyo3/maturin:latest
     entrypoint: [""]
   environment:
@@ -42,7 +42,7 @@ build:
 publish:
   stage: publish
   needs: ["build"]
-  image: 
+  image:
     name: ghcr.io/pyo3/maturin:main
     entrypoint: [""]
   variables:
