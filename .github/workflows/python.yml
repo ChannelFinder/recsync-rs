@@ -139,7 +139,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           command: sdist
-          args: --manifest-path pyreccaster/Cargo.toml --out dist --compatibility pypi
+          args: --manifest-path pyreccaster/Cargo.toml --out dist
       - name: Upload sdist
         uses: actions/upload-artifact@v5
         with:
