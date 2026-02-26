@@ -1,6 +1,6 @@
 [package]
 name = "pyreccaster"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Aqeel AlShafei <aqeel.alshafei@stfc.ac.uk>"]
 license = "MIT AND BSD-3-Clause"
