@@ -79,17 +79,27 @@ impl Reccaster {
     }
 
     async fn handle_announcement(&mut self) {
-        let ready = self.udpsock.ready(Interest::READABLE).await.unwrap();
+        let ready = match self.udpsock.ready(Interest::READABLE).await {
+            Ok(ready) => ready,
+            Err(_) => {
+                self.state = CasterState::Announcement;
+                return;
+            }
+        };
         if ready.is_readable() {
             match self.udpsock.try_recv_from(&mut self.buf) {
                 Ok((len, addr)) => {
                     if len >= 16 {
-                        let msg = Self::parse_announcement_message(&self.buf[..len], addr).unwrap();
-                        info!(
-                            "Received announcement message: {:?}:{:?} with key:{:?} from: {:?}",
-                            msg.server_addr, msg.server_port, msg.server_key, addr
-                        );
-                        self.state = CasterState::Handshake(msg);
+                        match Self::parse_announcement_message(&self.buf[..len], addr) {
+                            Ok(msg) => {
+                                info!("Received announcement message: {:?}:{:?} with key:{:?} from: {:?}", msg.server_addr, msg.server_port, msg.server_key, addr);
+                                self.state = CasterState::Handshake(msg);
+                            }
+                            Err(_) => {
+                                debug!("Invalid announcement message");
+                                self.state = CasterState::Announcement;
+                            }
+                        };
                     }
                 }
                 Err(ref err) if err.kind() == io::ErrorKind::WouldBlock => {}
@@ -105,29 +115,39 @@ impl Reccaster {
             let addr = msg.server_addr;
             let port = msg.server_port;
             let key = msg.server_key;
-            // @TODO handle connection errors
-            let stream = TcpStream::connect(format!("{}:{}", addr, port))
-                .await
-                .map_err(|err| error!("{:?}", err))
-                .unwrap();
-            info!("connect to {:?}:{}", addr, port);
+            let stream = match TcpStream::connect(format!("{}:{}", addr, port)).await {
+                Ok(stream) => {
+                    info!("Connected to {:?}:{}", addr, port);
+                    stream
+                }
+                Err(_) => {
+                    debug!("Connection failed {:?}:{}", addr, port);
+                    self.state = CasterState::Announcement;
+                    return;
+                }
+            };
             let codec = MessageCodec;
             let framed = Framed::new(stream, codec);
             self.framed = Some(framed);
 
             if let Some(framed) = &mut self.framed {
-                if let Some(msg) = framed.next().await {
-                    match msg.unwrap() {
-                        Message::ServerGreet(_) => {
-                            let _ = framed
-                                .send(Message::ClientGreet(wire::ClientGreet { serv_key: key }))
-                                .await;
-                            debug!("Greet Message with server key: {}", key);
-                            self.state = CasterState::Upload;
-                        }
-                        _ => {
-                            self.state = CasterState::Announcement;
-                        }
+                let msg = match framed.next().await {
+                    Some(Ok(msg)) => msg,
+                    _ => {
+                        self.state = CasterState::Announcement;
+                        return;
+                    }
+                };
+                match msg {
+                    Message::ServerGreet(_) => {
+                        let _ = framed
+                            .send(Message::ClientGreet(wire::ClientGreet { serv_key: key }))
+                            .await;
+                        debug!("Greet Message with server key: {}", key);
+                        self.state = CasterState::Upload;
+                    }
+                    _ => {
+                        self.state = CasterState::Announcement;
                     }
                 }
             }
